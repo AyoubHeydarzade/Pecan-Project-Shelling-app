@@ -1,0 +1,6 @@
+streamlit
+pandas
+statsmodels
+matplotlib
+seaborn
+openpyxl  # Needed for reading Excel files
