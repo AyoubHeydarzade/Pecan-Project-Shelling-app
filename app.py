@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 # App title
-st.title("📊 Simple Data Viewer App")
+st.title("📊 Pecan Project: Shelling Data Analysis Application")
 
 # Upload dataset
 st.subheader("Upload a Dataset (Excel or CSV)")
