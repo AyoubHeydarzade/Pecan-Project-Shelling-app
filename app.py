@@ -3,14 +3,15 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# App title
-st.title("📊 Pecan Project: Shelling Dataset Analysis Application")
-
-# --- LEFT SIDEBAR: USER OPTIONS ---
+# --- LEFT SIDEBAR: TITLE AND USER OPTIONS ---
+st.sidebar.title("📊 Pecan Project: Shelling Dataset Analysis Application")  # Move the title to the sidebar
 st.sidebar.header("🔧 Options")
 
 # Upload dataset in the sidebar
 uploaded_file = st.sidebar.file_uploader("📂 Upload a Dataset (Excel or CSV)", type=["xlsx", "csv"])
+
+# --- MAIN PAGE: DATA ANALYSIS RESULTS ---
+st.title("📊 Data Analysis Results")  # Show this title on the right side (main page)
 
 if uploaded_file is not None:
     file_extension = uploaded_file.name.split(".")[-1]
@@ -36,7 +37,7 @@ if uploaded_file is not None:
     input_variables = st.sidebar.multiselect("📥 Select Input Variables:", available_input_variables)
     output_variables = st.sidebar.multiselect("📤 Select Output Variables:", available_output_variables)
 
-    # --- RIGHT SIDE: DISPLAY RESULTS ---
+    # --- MAIN PAGE: DISPLAY RESULTS ---
     if input_variables and output_variables:
         # Display dataset preview
         st.subheader("📋 Data Preview")
