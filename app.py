@@ -3,6 +3,19 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# --- EXPAND SIDEBAR WIDTH ---
+st.markdown(
+    """
+    <style>
+    [data-testid="stSidebar"] {
+        min-width: 350px;
+        max-width: 400px;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # --- LEFT SIDEBAR: TITLE AND USER OPTIONS ---
 st.sidebar.title("📊 Pecan Project: Shelling Dataset Analysis Application")  # Move the title to the sidebar
 st.sidebar.header("🔧 Options")
