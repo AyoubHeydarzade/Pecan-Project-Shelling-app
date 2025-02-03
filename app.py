@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # App title
 st.title("📊 Pecan Project: Shelling Dataset Analysis Application")
@@ -41,9 +43,22 @@ if uploaded_file is not None:
         st.subheader("📊 Filtered Data (Selected Input & Output Variables)")
         st.write(filtered_data)
 
-        # Show summary statistics
-        st.subheader("📊 Summary Statistics for Selected Variables")
-        st.write(filtered_data.describe())
+        # Show summary statistics only for output variables
+        st.subheader("📊 Summary Statistics for Selected Output Variables")
+        output_data = df[output_variables]
+        st.write(output_data.describe())
+
+        # Step 2: Generate histograms for selected output variables
+        st.subheader("📈 Histograms for Selected Output Variables")
+
+        # Create a histogram for each output variable
+        for var in output_variables:
+            fig, ax = plt.subplots(figsize=(8, 5))
+            sns.histplot(output_data[var], kde=True, bins=20, ax=ax)
+            ax.set_title(f"Histogram of {var}")
+            ax.set_xlabel(var)
+            ax.set_ylabel("Frequency")
+            st.pyplot(fig)
 
     else:
         st.warning("⚠️ Please select at least one Input Variable and one Output Variable to proceed.")
