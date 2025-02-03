@@ -85,10 +85,21 @@ if uploaded_file is not None:
         for response_var in output_variables:
             st.write(f"**ANOVA Results for {response_var}**")
 
+            # Ensure relevant columns are numeric
+            for col in input_variables + [response_var]:
+                df[col] = pd.to_numeric(df[col], errors='coerce')  # Convert to numeric
+
+            # Drop rows with missing or infinite values
+            df_cleaned = df[input_variables + [response_var]].replace([float("inf"), -float("inf")], float("nan")).dropna()
+
+            if df_cleaned.empty:
+                st.warning(f"⚠️ Not enough valid data for {response_var} after cleaning. Please check your dataset.")
+                continue
+
             if anova_option == "Main Effects Analysis (ANOVA)":
                 # Define main effects model
                 main_effects_formula = f'Q("{response_var}") ~ ' + " + ".join([f'C(Q("{var}"))' for var in input_variables])
-                model = ols(main_effects_formula, data=df).fit()
+                model = ols(main_effects_formula, data=df_cleaned).fit()
                 anova_results = sm.stats.anova_lm(model, typ=2)
                 st.write(anova_results)
 
@@ -110,10 +121,7 @@ if uploaded_file is not None:
                     interaction_formula += " + " + " + ".join(interaction_terms)
 
                 try:
-                    # Drop missing values before fitting model
-                    clean_data = df[input_variables + [response_var]].dropna()
-                    
-                    model = ols(interaction_formula, data=clean_data).fit()
+                    model = ols(interaction_formula, data=df_cleaned).fit()
                     anova_results = sm.stats.anova_lm(model, typ=2)
                     st.write(anova_results)
 
