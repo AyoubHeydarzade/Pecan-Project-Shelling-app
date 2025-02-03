@@ -19,18 +19,21 @@ if uploaded_file is not None:
     st.subheader("📋 Data Preview")
     st.write(df)
 
-    # Step 1: Let users choose which columns are input and output variables
+    # Predefined input and output variables
+    predefined_input_variables = ["Gap between Rings (in)", "Tilt Angle (θ)", "Paddle Shaft RPM", "Drum RPM", "Moisture Level (%)"]
+    predefined_output_variables = ["Intact Halves (%)", "Weight dist1. (%)", "Weight dist2. (%)", "Weight dist3. (%)", 
+                                   "Discharge Throughput (lbs. %)", "Loss (%)"]
+
+    # Step 1: Let users choose which input and output variables they have
     st.subheader("⚙️ Select Input & Output Variables")
 
-    # Get the available column names
-    available_columns = df.columns.tolist()
+    # Filter options based on what exists in the dataset
+    available_input_variables = [var for var in predefined_input_variables if var in df.columns]
+    available_output_variables = [var for var in predefined_output_variables if var in df.columns]
 
-    # Input selection (excluding output variables)
-    input_variables = st.multiselect("Select Input Variables:", available_columns, default=None)
-
-    # Ensure output variables list does not include selected inputs
-    output_variable_options = [col for col in available_columns if col not in input_variables]
-    output_variables = st.multiselect("Select Output Variables:", output_variable_options, default=None)
+    # Let users select only from the filtered predefined lists
+    input_variables = st.multiselect("Select Input Variables:", available_input_variables)
+    output_variables = st.multiselect("Select Output Variables:", available_output_variables)
 
     # Ensure at least one input and one output variable is selected
     if input_variables and output_variables:
