@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
+import io
 
 # --- FORCE SIDEBAR WIDTH ADJUSTMENT ---
 st.markdown(
@@ -66,10 +67,18 @@ if uploaded_file is not None:
         filtered_data = df[input_variables + output_variables]
         st.write(filtered_data)
 
+        # Download Filtered Data
+        csv_filtered = filtered_data.to_csv(index=False).encode("utf-8")
+        st.download_button("📥 Download Filtered Data", csv_filtered, "filtered_data.csv", "text/csv")
+
         # Summary statistics for selected output variables
         st.subheader("📊 Summary Statistics for Selected Output Variables")
         output_data = df[output_variables]
         st.write(output_data.describe())
+
+        # Download Summary Statistics
+        csv_summary = output_data.describe().to_csv(index=True).encode("utf-8")
+        st.download_button("📥 Download Summary Statistics", csv_summary, "summary_statistics.csv", "text/csv")
 
         # Step 1: Show histograms if selected
         if show_histogram:
@@ -82,6 +91,11 @@ if uploaded_file is not None:
                 ax.set_ylabel("Frequency")
                 st.pyplot(fig)
 
+                # Download histogram image
+                img_bytes = io.BytesIO()
+                fig.savefig(img_bytes, format="png")
+                st.download_button(f"📥 Download Histogram of {var}", img_bytes.getvalue(), f"histogram_{var}.png", "image/png")
+
         # Step 2: Show Pair Plot if selected
         if show_pairplot:
             st.subheader("📊 Pair Plot of Input & Output Variables")
@@ -93,9 +107,16 @@ if uploaded_file is not None:
                 pairplot_fig = sns.pairplot(pairplot_data)
                 st.pyplot(pairplot_fig)
 
+                # Download Pair Plot
+                img_bytes = io.BytesIO()
+                pairplot_fig.savefig(img_bytes, format="png")
+                st.download_button("📥 Download Pair Plot", img_bytes.getvalue(), "pair_plot.png", "image/png")
+
         # Step 3: Perform One-Way ANOVA if selected
         if perform_anova:
             st.subheader("📊 One-Way ANOVA Analysis")
+            anova_results_list = []
+
             for response_var in output_variables:
                 st.write(f"**ANOVA Results for {response_var}**")
 
@@ -116,6 +137,15 @@ if uploaded_file is not None:
                 anova_results = sm.stats.anova_lm(model, typ=2)
                 st.write(anova_results)
 
+                # Store results for download
+                anova_results_list.append(anova_results.assign(Variable=response_var))
+
+            # Download ANOVA Results
+            if anova_results_list:
+                anova_results_df = pd.concat(anova_results_list)
+                csv_anova = anova_results_df.to_csv(index=True).encode("utf-8")
+                st.download_button("📥 Download ANOVA Results", csv_anova, "anova_results.csv", "text/csv")
+
         # Step 4: Show Main Effects Plots if selected
         if show_main_effects:
             st.subheader("📊 Main Effects Plots")
@@ -132,6 +162,11 @@ if uploaded_file is not None:
                         ax.set_title(f"Effect of {var} on {response_var}")
 
                 st.pyplot(fig)
+
+                # Download Main Effects Plot
+                img_bytes = io.BytesIO()
+                fig.savefig(img_bytes, format="png")
+                st.download_button(f"📥 Download Main Effects Plot for {response_var}", img_bytes.getvalue(), f"main_effects_{response_var}.png", "image/png")
 
     else:
         st.warning("⚠️ Please select at least one Input Variable and one Output Variable to proceed.")
