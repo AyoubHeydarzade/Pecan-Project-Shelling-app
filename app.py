@@ -76,5 +76,23 @@ if uploaded_file is not None:
             ax.set_ylabel("Frequency")
             st.pyplot(fig)
 
+        # Step 3: Pair Plot Between Input & Output Variables
+        if len(input_variables) > 0 and len(output_variables) > 0:
+            st.subheader("🔗 Pair Plot: Input Variables vs. Output Variables")
+            input_output_data = df[input_variables + output_variables]  # Select input & output columns
+            
+            # Create and display the pair plot
+            fig = sns.pairplot(input_output_data, diag_kind="kde", plot_kws={'alpha': 0.6})
+            st.pyplot(fig)
+
+        # Step 4: Pair Plot Between Output Variables
+        if len(output_variables) > 1:
+            st.subheader("🔗 Pair Plot: Output Variables vs. Output Variables")
+            output_data = df[output_variables]  # Select output columns
+            
+            # Create and display the pair plot
+            fig = sns.pairplot(output_data, diag_kind="kde", plot_kws={'alpha': 0.6})
+            st.pyplot(fig)
+
     else:
         st.warning("⚠️ Please select at least one Input Variable and one Output Variable to proceed.")
