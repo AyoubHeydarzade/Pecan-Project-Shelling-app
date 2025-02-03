@@ -52,8 +52,10 @@ if uploaded_file is not None:
     input_variables = st.sidebar.multiselect("📥 Select Input Variables:", available_input_variables)
     output_variables = st.sidebar.multiselect("📤 Select Output Variables:", available_output_variables)
 
-    # --- LEFT SIDEBAR: ANOVA MODEL SELECTION ---
+    # --- LEFT SIDEBAR: ANALYSIS OPTIONS ---
     st.sidebar.subheader("📊 Analysis Options")
+    show_histogram = st.sidebar.checkbox("Show Histograms for Output Variables")
+    show_pairplot = st.sidebar.checkbox("Show Pair Plots (Input & Output Variables)")
     perform_anova = st.sidebar.checkbox("Perform One-Way ANOVA Analysis")
     show_main_effects = st.sidebar.checkbox("Show Main Effects Plots")
 
@@ -69,18 +71,18 @@ if uploaded_file is not None:
         output_data = df[output_variables]
         st.write(output_data.describe())
 
-        # Step 2: Generate histograms for selected output variables
-        st.subheader("📈 Histograms for Selected Output Variables")
+        # Step 1: Show histograms if selected
+        if show_histogram:
+            st.subheader("📈 Histograms for Selected Output Variables")
+            for var in output_variables:
+                fig, ax = plt.subplots(figsize=(8, 5))
+                sns.histplot(output_data[var], bins=20, kde=True, ax=ax, color="blue")
+                ax.set_title(f"Histogram of {var}")
+                ax.set_xlabel(var)
+                ax.set_ylabel("Frequency")
+                st.pyplot(fig)
 
-        for var in output_variables:
-            fig, ax = plt.subplots(figsize=(8, 5))
-            sns.histplot(output_data[var], bins=20, kde=True, ax=ax, color="blue")
-            ax.set_title(f"Histogram of {var}")
-            ax.set_xlabel(var)
-            ax.set_ylabel("Frequency")
-            st.pyplot(fig)
-
-        # Step 3: Perform One-Way ANOVA if selected
+        # Step 2: Perform One-Way ANOVA if selected
         if perform_anova:
             st.subheader("📊 One-Way ANOVA Analysis")
             for response_var in output_variables:
@@ -103,10 +105,9 @@ if uploaded_file is not None:
                 anova_results = sm.stats.anova_lm(model, typ=2)
                 st.write(anova_results)
 
-        # Step 4: Show Main Effects Plots if selected
+        # Step 3: Show Main Effects Plots if selected
         if show_main_effects:
             st.subheader("📊 Main Effects Plots")
-
             for response_var in output_variables:
                 st.write(f"**Main Effects Plots for {response_var}**")
                 fig, ax = plt.subplots(len(input_variables), 1, figsize=(10, len(input_variables) * 5))
@@ -119,6 +120,17 @@ if uploaded_file is not None:
                         sns.boxplot(x=var, y=response_var, data=df, ax=ax)
                         ax.set_title(f"Effect of {var} on {response_var}")
 
+                st.pyplot(fig)
+
+        # Step 4: Show Pair Plot if selected
+        if show_pairplot:
+            st.subheader("📊 Pair Plot of Input & Output Variables")
+            pairplot_data = df[input_variables + output_variables].dropna()  # Remove missing values
+
+            if pairplot_data.empty:
+                st.warning("⚠️ Not enough valid data for a pair plot. Please check your dataset.")
+            else:
+                fig = sns.pairplot(pairplot_data)
                 st.pyplot(fig)
 
     else:
