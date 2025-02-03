@@ -3,13 +3,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# --- EXPAND SIDEBAR WIDTH ---
+# --- FORCE SIDEBAR WIDTH ADJUSTMENT ---
 st.markdown(
     """
     <style>
     [data-testid="stSidebar"] {
-        min-width: 350px;
-        max-width: 400px;
+        min-width: 400px !important;
+        max-width: 450px !important;
     }
     </style>
     """,
