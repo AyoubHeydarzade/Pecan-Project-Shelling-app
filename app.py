@@ -22,11 +22,15 @@ if uploaded_file is not None:
     # Step 1: Let users choose which columns are input and output variables
     st.subheader("⚙️ Select Input & Output Variables")
 
-    # Let users select input variables from the dataset
-    input_variables = st.multiselect("Select Input Variables:", df.columns)
+    # Get the available column names
+    available_columns = df.columns.tolist()
 
-    # Let users select output variables from the dataset
-    output_variables = st.multiselect("Select Output Variables:", df.columns)
+    # Input selection (excluding output variables)
+    input_variables = st.multiselect("Select Input Variables:", available_columns, default=None)
+
+    # Ensure output variables list does not include selected inputs
+    output_variable_options = [col for col in available_columns if col not in input_variables]
+    output_variables = st.multiselect("Select Output Variables:", output_variable_options, default=None)
 
     # Ensure at least one input and one output variable is selected
     if input_variables and output_variables:
