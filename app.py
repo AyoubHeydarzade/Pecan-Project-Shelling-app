@@ -80,21 +80,7 @@ if uploaded_file is not None:
             ax.set_ylabel("Frequency")
             st.pyplot(fig)
 
-        # Step 3: Pair Plot Between Input & Output Variables
-        if len(input_variables) > 0 and len(output_variables) > 0:
-            st.subheader("🔗 Pair Plot: Input Variables vs. Output Variables")
-            input_output_data = df[input_variables + output_variables]  
-            fig = sns.pairplot(input_output_data, diag_kind="kde", plot_kws={'alpha': 0.6})
-            st.pyplot(fig)
-
-        # Step 4: Pair Plot Between Output Variables
-        if len(output_variables) > 1:
-            st.subheader("🔗 Pair Plot: Output Variables vs. Output Variables")
-            output_data = df[output_variables]  
-            fig = sns.pairplot(output_data, diag_kind="kde", plot_kws={'alpha': 0.6})
-            st.pyplot(fig)
-
-        # Step 5: ANOVA Analysis
+        # Step 3: ANOVA Analysis
         st.subheader("📊 ANOVA Analysis Results")
         for response_var in output_variables:
             st.write(f"**ANOVA Results for {response_var}**")
@@ -107,12 +93,32 @@ if uploaded_file is not None:
                 st.write(anova_results)
 
             elif anova_option == "Main and 2-Way Interaction Effects Analysis (ANOVA)":
-                # Define interaction effects model
-                interaction_terms = " + ".join([f'C(Q("{var1}")):C(Q("{var2}"))' for i, var1 in enumerate(input_variables) for var2 in input_variables[i+1:]])
-                interaction_formula = f'Q("{response_var}") ~ ' + " + ".join([f'C(Q("{var}"))' for var in input_variables]) + " + " + interaction_terms
-                model = ols(interaction_formula, data=df).fit()
-                anova_results = sm.stats.anova_lm(model, typ=2)
-                st.write(anova_results)
+                if len(input_variables) < 2:
+                    st.warning("⚠️ At least two input variables are required for interaction analysis.")
+                    continue
+
+                # Define interaction effects model (handling multicollinearity)
+                interaction_terms = [
+                    f'C(Q("{var1}")):C(Q("{var2}"))'
+                    for i, var1 in enumerate(input_variables)
+                    for var2 in input_variables[i+1:]
+                ]
+
+                # Build formula ensuring it does not create too many interactions
+                interaction_formula = f'Q("{response_var}") ~ ' + " + ".join([f'C(Q("{var}"))' for var in input_variables]) 
+                if interaction_terms:
+                    interaction_formula += " + " + " + ".join(interaction_terms)
+
+                try:
+                    # Drop missing values before fitting model
+                    clean_data = df[input_variables + [response_var]].dropna()
+                    
+                    model = ols(interaction_formula, data=clean_data).fit()
+                    anova_results = sm.stats.anova_lm(model, typ=2)
+                    st.write(anova_results)
+
+                except ValueError as e:
+                    st.error(f"⚠️ Error in ANOVA calculation: {e}. This may be due to insufficient data for interactions.")
 
     else:
         st.warning("⚠️ Please select at least one Input Variable and one Output Variable to proceed.")
