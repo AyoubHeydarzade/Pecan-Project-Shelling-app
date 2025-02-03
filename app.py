@@ -19,6 +19,18 @@ if uploaded_file is not None:
     st.subheader("📋 Data Preview")
     st.write(df)
 
-    st.subheader("📊 Summary Statistics")
-    st.write(df.describe())
+    # Define column categories
+    initial_info_columns = ["Date", "Variety", "Batch Size (lb)", "Machine", "Exp. #"]
+    input_variables = ["Gap between Rings (in)", "Tilt Angle (θ)", "Paddle Shaft RPM", "Drum RPM", "Moisture Level (%)"]
+    output_variables = ["Intact Halves (%)", "Weight dist1. (%)", "Weight dist2. (%)", "Weight dist3. (%)",
+                        "Discharge Throughput (lbs. %)", "Loss (%)"]
 
+    # Filter the dataset to show only Input & Output variables
+    filtered_columns = input_variables + output_variables
+    filtered_data = df[filtered_columns] if all(col in df.columns for col in filtered_columns) else df
+
+    st.subheader("📊 Filtered Data (Only Input & Output Variables)")
+    st.write(filtered_data)
+
+    st.subheader("📊 Summary Statistics")
+    st.write(filtered_data.describe())
