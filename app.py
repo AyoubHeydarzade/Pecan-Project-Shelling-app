@@ -92,6 +92,10 @@ if uploaded_file is not None:
             # Drop rows with missing or infinite values
             df_cleaned = df[input_variables + [response_var]].replace([float("inf"), -float("inf")], float("nan")).dropna()
 
+            # **Debugging Step: Print Cleaned Data**
+            st.write(f"**Debugging: Cleaned Data for {response_var} (First 5 Rows)**")
+            st.write(df_cleaned.head())
+
             if df_cleaned.empty:
                 st.warning(f"⚠️ Not enough valid data for {response_var} after cleaning. Please check your dataset.")
                 continue
@@ -121,6 +125,10 @@ if uploaded_file is not None:
                     interaction_formula += " + " + " + ".join(interaction_terms)
 
                 try:
+                    # **Debugging Step: Print ANOVA Formula**
+                    st.write(f"**Debugging: ANOVA Formula for {response_var}**")
+                    st.code(interaction_formula)
+
                     model = ols(interaction_formula, data=df_cleaned).fit()
                     anova_results = sm.stats.anova_lm(model, typ=2)
                     st.write(anova_results)
