@@ -54,7 +54,7 @@ if uploaded_file is not None:
         # Create a histogram for each output variable
         for var in output_variables:
             fig, ax = plt.subplots(figsize=(8, 5))
-            sns.histplot(output_data[var], kde=True, bins=20, ax=ax)
+            sns.histplot(output_data[var], kde=True, bins=20, ax=ax, kde_kws={"color": "red"})
             ax.set_title(f"Histogram of {var}")
             ax.set_xlabel(var)
             ax.set_ylabel("Frequency")
