@@ -53,9 +53,9 @@ if uploaded_file is not None:
     output_variables = st.sidebar.multiselect("📤 Select Output Variables:", available_output_variables)
 
     # --- LEFT SIDEBAR: ANOVA MODEL SELECTION ---
-    st.sidebar.subheader("📊 Customizable ANOVA Model")
-    anova_option = st.sidebar.radio("Choose ANOVA Type:", 
-                                    ["Main Effects Analysis (ANOVA)", "Main and 2-Way Interaction Effects Analysis (ANOVA)"])
+    st.sidebar.subheader("📊 Analysis Options")
+    perform_anova = st.sidebar.checkbox("Perform One-Way ANOVA Analysis")
+    show_main_effects = st.sidebar.checkbox("Show Main Effects Plots")
 
     # --- MAIN PAGE: DISPLAY RESULTS ---
     if input_variables and output_variables:
@@ -80,61 +80,46 @@ if uploaded_file is not None:
             ax.set_ylabel("Frequency")
             st.pyplot(fig)
 
-        # Step 3: ANOVA Analysis
-        st.subheader("📊 ANOVA Analysis Results")
-        for response_var in output_variables:
-            st.write(f"**ANOVA Results for {response_var}**")
+        # Step 3: Perform One-Way ANOVA if selected
+        if perform_anova:
+            st.subheader("📊 One-Way ANOVA Analysis")
+            for response_var in output_variables:
+                st.write(f"**ANOVA Results for {response_var}**")
 
-            # Ensure relevant columns are numeric
-            for col in input_variables + [response_var]:
-                df[col] = pd.to_numeric(df[col], errors='coerce')  # Convert to numeric
+                # Ensure relevant columns are numeric
+                for col in input_variables + [response_var]:
+                    df[col] = pd.to_numeric(df[col], errors='coerce')
 
-            # Drop rows with missing or infinite values
-            df_cleaned = df[input_variables + [response_var]].replace([float("inf"), -float("inf")], float("nan")).dropna()
+                # Drop rows with missing values
+                df_cleaned = df[input_variables + [response_var]].dropna()
 
-            # **Debugging Step: Print Cleaned Data**
-            st.write(f"**Debugging: Cleaned Data for {response_var} (First 5 Rows)**")
-            st.write(df_cleaned.head())
+                if df_cleaned.empty:
+                    st.warning(f"⚠️ Not enough valid data for {response_var} after cleaning. Please check your dataset.")
+                    continue
 
-            if df_cleaned.empty:
-                st.warning(f"⚠️ Not enough valid data for {response_var} after cleaning. Please check your dataset.")
-                continue
-
-            if anova_option == "Main Effects Analysis (ANOVA)":
                 # Define main effects model
                 main_effects_formula = f'Q("{response_var}") ~ ' + " + ".join([f'C(Q("{var}"))' for var in input_variables])
                 model = ols(main_effects_formula, data=df_cleaned).fit()
                 anova_results = sm.stats.anova_lm(model, typ=2)
                 st.write(anova_results)
 
-            elif anova_option == "Main and 2-Way Interaction Effects Analysis (ANOVA)":
-                if len(input_variables) < 2:
-                    st.warning("⚠️ At least two input variables are required for interaction analysis.")
-                    continue
+        # Step 4: Show Main Effects Plots if selected
+        if show_main_effects:
+            st.subheader("📊 Main Effects Plots")
 
-                # Define interaction effects model (handling multicollinearity)
-                interaction_terms = [
-                    f'C(Q("{var1}")):C(Q("{var2}"))'
-                    for i, var1 in enumerate(input_variables)
-                    for var2 in input_variables[i+1:]
-                ]
+            for response_var in output_variables:
+                st.write(f"**Main Effects Plots for {response_var}**")
+                fig, ax = plt.subplots(len(input_variables), 1, figsize=(10, len(input_variables) * 5))
 
-                # Build formula ensuring it does not create too many interactions
-                interaction_formula = f'Q("{response_var}") ~ ' + " + ".join([f'C(Q("{var}"))' for var in input_variables]) 
-                if interaction_terms:
-                    interaction_formula += " + " + " + ".join(interaction_terms)
+                for i, var in enumerate(input_variables):
+                    if len(input_variables) > 1:
+                        sns.boxplot(x=var, y=response_var, data=df, ax=ax[i])
+                        ax[i].set_title(f"Effect of {var} on {response_var}")
+                    else:
+                        sns.boxplot(x=var, y=response_var, data=df, ax=ax)
+                        ax.set_title(f"Effect of {var} on {response_var}")
 
-                try:
-                    # **Debugging Step: Print ANOVA Formula**
-                    st.write(f"**Debugging: ANOVA Formula for {response_var}**")
-                    st.code(interaction_formula)
-
-                    model = ols(interaction_formula, data=df_cleaned).fit()
-                    anova_results = sm.stats.anova_lm(model, typ=2)
-                    st.write(anova_results)
-
-                except ValueError as e:
-                    st.error(f"⚠️ Error in ANOVA calculation: {e}. This may be due to insufficient data for interactions.")
+                st.pyplot(fig)
 
     else:
         st.warning("⚠️ Please select at least one Input Variable and one Output Variable to proceed.")
