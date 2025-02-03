@@ -55,11 +55,8 @@ if uploaded_file is not None:
         for var in output_variables:
             fig, ax = plt.subplots(figsize=(8, 5))
             
-            # Plot histogram
-            sns.histplot(output_data[var], bins=20, ax=ax, color="blue", kde=False)
-            
-            # Overlay KDE curve in red
-            sns.kdeplot(output_data[var], ax=ax, color="red", linewidth=2)
+            # Plot histogram with blue color
+            sns.histplot(output_data[var], bins=20, kde=True, ax=ax, color="blue")
 
             ax.set_title(f"Histogram of {var}")
             ax.set_xlabel(var)
