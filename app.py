@@ -82,7 +82,18 @@ if uploaded_file is not None:
                 ax.set_ylabel("Frequency")
                 st.pyplot(fig)
 
-        # Step 2: Perform One-Way ANOVA if selected
+        # Step 2: Show Pair Plot if selected
+        if show_pairplot:
+            st.subheader("📊 Pair Plot of Input & Output Variables")
+            pairplot_data = df[input_variables + output_variables].dropna()  # Remove missing values
+
+            if pairplot_data.empty:
+                st.warning("⚠️ Not enough valid data for a pair plot. Please check your dataset.")
+            else:
+                pairplot_fig = sns.pairplot(pairplot_data)
+                st.pyplot(pairplot_fig)
+
+        # Step 3: Perform One-Way ANOVA if selected
         if perform_anova:
             st.subheader("📊 One-Way ANOVA Analysis")
             for response_var in output_variables:
@@ -105,7 +116,7 @@ if uploaded_file is not None:
                 anova_results = sm.stats.anova_lm(model, typ=2)
                 st.write(anova_results)
 
-        # Step 3: Show Main Effects Plots if selected
+        # Step 4: Show Main Effects Plots if selected
         if show_main_effects:
             st.subheader("📊 Main Effects Plots")
             for response_var in output_variables:
@@ -120,17 +131,6 @@ if uploaded_file is not None:
                         sns.boxplot(x=var, y=response_var, data=df, ax=ax)
                         ax.set_title(f"Effect of {var} on {response_var}")
 
-                st.pyplot(fig)
-
-        # Step 4: Show Pair Plot if selected
-        if show_pairplot:
-            st.subheader("📊 Pair Plot of Input & Output Variables")
-            pairplot_data = df[input_variables + output_variables].dropna()  # Remove missing values
-
-            if pairplot_data.empty:
-                st.warning("⚠️ Not enough valid data for a pair plot. Please check your dataset.")
-            else:
-                fig = sns.pairplot(pairplot_data)
                 st.pyplot(fig)
 
     else:
